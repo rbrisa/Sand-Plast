@@ -295,7 +295,16 @@ async def require_super_admin(current_user: dict = Depends(get_current_user)) ->
 
 # Auth endpoints
 @api_router.post("/auth/register")
-async def register(user_data: UserRegister):
+@limiter.limit("5/minute")
+async def register(request: Request, user_data: UserRegister):
+    # Check password strength
+    password_check = security_service.check_password_strength(user_data.password)
+    if not password_check['valid']:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Mot de passe trop faible: {', '.join(password_check['issues'])}"
+        )
+    
     # Check if user exists
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
@@ -317,6 +326,22 @@ async def register(user_data: UserRegister):
     user_doc['password'] = hash_password(user_data.password)
     
     await db.users.insert_one(user_doc)
+    
+    # Audit log
+    await audit_service.log_action(
+        user_id=user.id,
+        action="USER_REGISTERED",
+        resource_type="user",
+        resource_id=user.id,
+        ip_address=request.client.host if request.client else None
+    )
+    
+    # Send welcome email
+    await email_service.send_welcome_email(
+        user_email=user.email,
+        user_name=user.company_name,
+        user_role=user.role
+    )
     
     token = create_access_token({"sub": user.id, "role": user.role})
     return {"user": user, "token": token}
