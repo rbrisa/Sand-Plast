@@ -82,6 +82,10 @@ function App() {
             <Route path="/creatives" element={token ? <AdCreatives /> : <Navigate to="/" />} />
             <Route path="/inventory" element={token ? <Inventory /> : <Navigate to="/" />} />
             <Route path="/analytics" element={token ? <Analytics /> : <Navigate to="/" />} />
+            <Route path="/admin" element={token ? <AdminPanel /> : <Navigate to="/" />} />
+            <Route path="/payment" element={token ? <Payment /> : <Navigate to="/" />} />
+            <Route path="/payment/success" element={token ? <PaymentSuccess /> : <Navigate to="/" />} />
+            <Route path="/payment/cancel" element={token ? <PaymentCancel /> : <Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" richColors />
