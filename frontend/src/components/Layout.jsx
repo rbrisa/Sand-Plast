@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { AuthContext } from "@/App";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Target, Image, BarChart3, LogOut, Package, Shield, CreditCard, ArrowDownToLine, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Target, Image, BarChart3, LogOut, Package, Shield, CreditCard, ArrowDownToLine, TrendingUp, Lock, FileText } from "lucide-react";
 
 const Layout = ({ children }) => {
   const { user, logout } = useContext(AuthContext);
