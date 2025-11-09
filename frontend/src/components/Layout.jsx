@@ -25,11 +25,13 @@ const Layout = ({ children }) => {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Inventaires", href: "/inventory", icon: Package },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Retraits", href: "/withdrawals", icon: ArrowDownToLine },
   ];
 
   const adminNavigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Administration", href: "/admin", icon: Shield },
+    { name: "Revenus AOK", href: "/platform-revenue", icon: TrendingUp },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
   ];
 
