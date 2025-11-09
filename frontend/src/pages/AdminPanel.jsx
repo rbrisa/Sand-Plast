@@ -102,7 +102,7 @@ const AdminPanel = () => {
               <Shield className="w-8 h-8 text-red-600" />
               <h1 className="text-3xl font-bold text-gray-900">Panneau d'Administration</h1>
             </div>
-            <p className="text-gray-600 mt-1">Gestion de la plateforme RTB</p>
+            <p className="text-gray-600 mt-1">Gestion de la plateforme AOK</p>
           </div>
           {user?.role === "super_admin" && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
