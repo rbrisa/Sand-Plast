@@ -347,13 +347,30 @@ async def register(request: Request, user_data: UserRegister):
     return {"user": user, "token": token}
 
 @api_router.post("/auth/login")
-async def login(credentials: UserLogin):
+@limiter.limit("10/minute")
+async def login(request: Request, credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user or not verify_password(credentials.password, user['password']):
+        # Audit failed login
+        await audit_service.log_action(
+            user_id="anonymous",
+            action="LOGIN_FAILED",
+            resource_type="auth",
+            details={"email": credentials.email},
+            ip_address=request.client.host if request.client else None
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not user.get('is_active', True):
         raise HTTPException(status_code=403, detail="Account is inactive")
+    
+    # Audit successful login
+    await audit_service.log_action(
+        user_id=user['id'],
+        action="LOGIN_SUCCESS",
+        resource_type="auth",
+        ip_address=request.client.host if request.client else None
+    )
     
     token = create_access_token({"sub": user['id'], "role": user['role']})
     user.pop('password')
