@@ -807,6 +807,125 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# Withdrawal endpoints
+@api_router.post("/withdrawals/request")
+async def request_withdrawal(withdrawal_data: WithdrawalRequestCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != UserRole.PUBLISHER:
+        raise HTTPException(status_code=403, detail="Only publishers can request withdrawals")
+    
+    # Check minimum amount
+    if withdrawal_data.amount < 50:
+        raise HTTPException(status_code=400, detail="Minimum withdrawal amount is $50")
+    
+    # Check balance
+    if current_user['balance'] < withdrawal_data.amount:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+    
+    # Create withdrawal request
+    withdrawal = WithdrawalRequest(
+        user_id=current_user['id'],
+        **withdrawal_data.model_dump()
+    )
+    
+    await db.withdrawal_requests.insert_one(withdrawal.model_dump())
+    
+    # Deduct from balance (will be refunded if rejected)
+    await db.users.update_one(
+        {"id": current_user['id']},
+        {"$inc": {"balance": -withdrawal_data.amount}}
+    )
+    
+    # Record transaction
+    transaction = Transaction(
+        type="withdrawal",
+        user_id=current_user['id'],
+        amount=-withdrawal_data.amount,
+        description=f"Withdrawal request via {withdrawal_data.payment_method}",
+        related_id=withdrawal.id
+    )
+    await db.transactions.insert_one(transaction.model_dump())
+    
+    return {"success": True, "withdrawal_id": withdrawal.id, "message": "Withdrawal request submitted"}
+
+@api_router.get("/withdrawals/my-requests")
+async def get_my_withdrawals(current_user: dict = Depends(get_current_user)):
+    withdrawals = await db.withdrawal_requests.find(
+        {"user_id": current_user['id']}, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return withdrawals
+
+@api_router.get("/admin/withdrawals")
+async def get_all_withdrawals(status: Optional[str] = None, current_user: dict = Depends(require_admin)):
+    query = {"status": status} if status else {}
+    withdrawals = await db.withdrawal_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Enrich with user data
+    for withdrawal in withdrawals:
+        user = await db.users.find_one({"id": withdrawal['user_id']}, {"_id": 0, "password": 0})
+        withdrawal['user'] = user
+    
+    return withdrawals
+
+@api_router.put("/admin/withdrawals/{withdrawal_id}/approve")
+async def approve_withdrawal(withdrawal_id: str, current_user: dict = Depends(require_admin)):
+    withdrawal = await db.withdrawal_requests.find_one({"id": withdrawal_id})
+    if not withdrawal:
+        raise HTTPException(status_code=404, detail="Withdrawal request not found")
+    
+    if withdrawal['status'] != "pending":
+        raise HTTPException(status_code=400, detail="Withdrawal already processed")
+    
+    # Update status
+    await db.withdrawal_requests.update_one(
+        {"id": withdrawal_id},
+        {
+            "$set": {
+                "status": "approved",
+                "processed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {"success": True, "message": "Withdrawal approved"}
+
+@api_router.put("/admin/withdrawals/{withdrawal_id}/reject")
+async def reject_withdrawal(withdrawal_id: str, current_user: dict = Depends(require_admin)):
+    withdrawal = await db.withdrawal_requests.find_one({"id": withdrawal_id})
+    if not withdrawal:
+        raise HTTPException(status_code=404, detail="Withdrawal request not found")
+    
+    if withdrawal['status'] != "pending":
+        raise HTTPException(status_code=400, detail="Withdrawal already processed")
+    
+    # Refund to user
+    await db.users.update_one(
+        {"id": withdrawal['user_id']},
+        {"$inc": {"balance": withdrawal['amount']}}
+    )
+    
+    # Update status
+    await db.withdrawal_requests.update_one(
+        {"id": withdrawal_id},
+        {
+            "$set": {
+                "status": "rejected",
+                "processed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {"success": True, "message": "Withdrawal rejected and balance refunded"}
+
+# Transaction history
+@api_router.get("/transactions/my-history")
+async def get_my_transactions(current_user: dict = Depends(get_current_user)):
+    transactions = await db.transactions.find(
+        {"user_id": current_user['id']}, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return transactions
+
 app.include_router(api_router)
 
 app.add_middleware(
