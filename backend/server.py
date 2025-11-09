@@ -1284,19 +1284,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Create logs directory
+logs_dir = ROOT_DIR / 'logs'
+logs_dir.mkdir(exist_ok=True)
+
 # Logging Configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(ROOT_DIR / 'logs' / 'app.log'),
+        logging.FileHandler(logs_dir / 'app.log'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
-
-# Create logs directory
-(ROOT_DIR / 'logs').mkdir(exist_ok=True)
 
 @app.on_event("startup")
 async def startup_event():
