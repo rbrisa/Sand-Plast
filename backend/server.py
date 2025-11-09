@@ -998,7 +998,7 @@ async def approve_withdrawal(request: Request, withdrawal_id: str, current_user:
     return {"success": True, "message": "Withdrawal approved"}
 
 @api_router.put("/admin/withdrawals/{withdrawal_id}/reject")
-async def reject_withdrawal(withdrawal_id: str, current_user: dict = Depends(require_admin)):
+async def reject_withdrawal(request: Request, withdrawal_id: str, current_user: dict = Depends(require_admin)):
     withdrawal = await db.withdrawal_requests.find_one({"id": withdrawal_id})
     if not withdrawal:
         raise HTTPException(status_code=404, detail="Withdrawal request not found")
@@ -1022,6 +1022,27 @@ async def reject_withdrawal(withdrawal_id: str, current_user: dict = Depends(req
             }
         }
     )
+    
+    # Get user
+    user = await db.users.find_one({"id": withdrawal['user_id']})
+    
+    # Audit log
+    await audit_service.log_action(
+        user_id=current_user['id'],
+        action="WITHDRAWAL_REJECTED",
+        resource_type="withdrawal",
+        resource_id=withdrawal_id,
+        details={"amount": withdrawal['amount'], "publisher_id": withdrawal['user_id']},
+        ip_address=request.client.host if request.client else None
+    )
+    
+    # Send email to publisher
+    if user:
+        await email_service.send_withdrawal_notification(
+            user_email=user['email'],
+            amount=withdrawal['amount'],
+            status="rejected"
+        )
     
     return {"success": True, "message": "Withdrawal rejected and balance refunded"}
 
