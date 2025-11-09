@@ -115,7 +115,7 @@ const AdminPanel = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Créer un nouvel administrateur</DialogTitle>
-                  <DialogDescription>Ajouter un administrateur à la plateforme</DialogDescription>
+                  <DialogDescription>Ajouter un administrateur à la plateforme AOK</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateAdmin} className="space-y-4">
                   <div>
