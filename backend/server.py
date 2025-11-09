@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -14,26 +15,52 @@ import bcrypt
 import jwt
 from enum import Enum
 
+# Import services
+from services.email_service import EmailService
+from services.pdf_service import PDFService
+from services.audit_service import AuditService
+from services.security_service import SecurityService
+from middleware.rate_limiter import limiter, rate_limit_exceeded_handler, strict_rate_limit, normal_rate_limit
+from slowapi.errors import RateLimitExceeded
+import config
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = config.MONGO_URL
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[config.DB_NAME]
 
 # JWT Configuration
-SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+SECRET_KEY = config.JWT_SECRET
+ALGORITHM = config.JWT_ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = config.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Stripe Configuration
-STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+STRIPE_API_KEY = config.STRIPE_API_KEY
+
+# Platform Settings
+PLATFORM_COMMISSION_RATE = config.PLATFORM_COMMISSION_RATE
 
 security = HTTPBearer()
 
-app = FastAPI()
+app = FastAPI(title="AOK Platform API", version="2.0.0")
 api_router = APIRouter(prefix="/api")
+
+# Initialize services
+email_service = EmailService(
+    api_key=config.SENDGRID_API_KEY,
+    from_email=config.SENDGRID_FROM_EMAIL,
+    from_name=config.SENDGRID_FROM_NAME
+)
+pdf_service = PDFService(output_dir=str(config.INVOICE_DIR))
+audit_service = AuditService(db=db)
+security_service = SecurityService(issuer_name=config.PLATFORM_NAME)
+
+# Add rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # Enums
 class UserRole(str, Enum):
