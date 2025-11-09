@@ -86,6 +86,15 @@ const Layout = ({ children }) => {
             </div>
           )}
           <Button
+            onClick={() => navigate('/security/2fa')}
+            variant="outline"
+            className="w-full mb-2"
+            data-testid="security-button"
+          >
+            <Lock className="w-4 h-4 mr-2" />
+            Sécurité 2FA
+          </Button>
+          <Button
             onClick={logout}
             variant="outline"
             className="w-full"
