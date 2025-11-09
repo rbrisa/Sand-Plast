@@ -32,6 +32,7 @@ const Layout = ({ children }) => {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Administration", href: "/admin", icon: Shield },
     { name: "Revenus AOK", href: "/platform-revenue", icon: TrendingUp },
+    { name: "Logs d'Audit", href: "/admin/audit-logs", icon: FileText },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
   ];
 
