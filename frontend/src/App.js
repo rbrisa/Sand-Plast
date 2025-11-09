@@ -88,6 +88,8 @@ function App() {
             <Route path="/payment" element={token ? <Payment /> : <Navigate to="/" />} />
             <Route path="/payment/success" element={token ? <PaymentSuccess /> : <Navigate to="/" />} />
             <Route path="/payment/cancel" element={token ? <PaymentCancel /> : <Navigate to="/" />} />
+            <Route path="/withdrawals" element={token ? <Withdrawals /> : <Navigate to="/" />} />
+            <Route path="/platform-revenue" element={token ? <PlatformRevenue /> : <Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" richColors />
