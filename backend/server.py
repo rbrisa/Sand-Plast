@@ -826,6 +826,22 @@ async def get_payment_status(session_id: str, current_user: dict = Depends(get_c
                     {"id": transaction['user_id']},
                     {"$inc": {"balance": transaction['credits']}}
                 )
+                
+                # Send confirmation email
+                await email_service.send_payment_confirmation(
+                    user_email=current_user['email'],
+                    amount=transaction['amount'],
+                    credits=transaction['credits']
+                )
+                
+                # Audit log
+                await audit_service.log_action(
+                    user_id=current_user['id'],
+                    action="PAYMENT_COMPLETED",
+                    resource_type="payment",
+                    resource_id=session_id,
+                    details={"amount": transaction['amount'], "credits": transaction['credits']}
+                )
         
         return {
             "status": checkout_status.status,
