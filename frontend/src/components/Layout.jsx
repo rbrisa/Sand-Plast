@@ -11,11 +11,14 @@ const Layout = ({ children }) => {
 
   const isAdvertiser = user?.role === "advertiser";
 
+  const isAdmin = user?.role === "super_admin" || user?.role === "admin";
+
   const advertiserNavigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Campagnes", href: "/campaigns", icon: Target },
     { name: "Créatifs", href: "/creatives", icon: Image },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Recharger", href: "/payment", icon: CreditCard },
   ];
 
   const publisherNavigation = [
@@ -24,7 +27,13 @@ const Layout = ({ children }) => {
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
   ];
 
-  const navigation = isAdvertiser ? advertiserNavigation : publisherNavigation;
+  const adminNavigation = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Administration", href: "/admin", icon: Shield },
+    { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  ];
+
+  const navigation = isAdmin ? adminNavigation : (isAdvertiser ? advertiserNavigation : publisherNavigation);
 
   return (
     <div className="flex h-screen bg-gray-50">
