@@ -1165,7 +1165,7 @@ async def get_audit_logs(
     limit: int = 100,
     current_user: dict = Depends(require_admin)
 ):
-    \"\"\"Récupère les logs d'audit\"\"\"
+    """Récupère les logs d'audit"""
     logs = await audit_service.search_logs(
         action=action,
         resource_type=resource_type,
