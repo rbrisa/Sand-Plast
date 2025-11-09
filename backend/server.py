@@ -1203,7 +1203,7 @@ async def enable_2fa(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/security/2fa/verify")
 async def verify_2fa_setup(token: str, current_user: dict = Depends(get_current_user)):
-    \"\"\"Vérifie et confirme la configuration 2FA\"\"\"
+    """Vérifie et confirme la configuration 2FA"""
     user = await db.users.find_one({"id": current_user['id']})
     secret = user.get('two_fa_secret_temp')
     
