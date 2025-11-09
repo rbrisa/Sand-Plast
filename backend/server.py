@@ -1074,7 +1074,7 @@ async def get_my_transactions(current_user: dict = Depends(get_current_user)):
 # PDF Reports
 @api_router.get("/reports/campaign/{campaign_id}/pdf")
 async def generate_campaign_report_pdf(campaign_id: str, current_user: dict = Depends(get_current_user)):
-    \"\"\"Génère un rapport PDF pour une campagne\"\"\"
+    """Génère un rapport PDF pour une campagne"""
     # Get campaign analytics
     campaign = await db.campaigns.find_one({"id": campaign_id}, {"_id": 0})
     if not campaign:
