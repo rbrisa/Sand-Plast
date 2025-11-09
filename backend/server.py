@@ -878,13 +878,14 @@ async def stripe_webhook(request: Request):
 
 # Withdrawal endpoints
 @api_router.post("/withdrawals/request")
-async def request_withdrawal(withdrawal_data: WithdrawalRequestCreate, current_user: dict = Depends(get_current_user)):
+async def request_withdrawal(request: Request, withdrawal_data: WithdrawalRequestCreate, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != UserRole.PUBLISHER:
         raise HTTPException(status_code=403, detail="Only publishers can request withdrawals")
     
     # Check minimum amount
-    if withdrawal_data.amount < 50:
-        raise HTTPException(status_code=400, detail="Minimum withdrawal amount is $50")
+    min_amount = config.MIN_WITHDRAWAL_AMOUNT
+    if withdrawal_data.amount < min_amount:
+        raise HTTPException(status_code=400, detail=f"Minimum withdrawal amount is ${min_amount}")
     
     # Check balance
     if current_user['balance'] < withdrawal_data.amount:
@@ -913,6 +914,23 @@ async def request_withdrawal(withdrawal_data: WithdrawalRequestCreate, current_u
         related_id=withdrawal.id
     )
     await db.transactions.insert_one(transaction.model_dump())
+    
+    # Audit log
+    await audit_service.log_action(
+        user_id=current_user['id'],
+        action="WITHDRAWAL_REQUESTED",
+        resource_type="withdrawal",
+        resource_id=withdrawal.id,
+        details={"amount": withdrawal_data.amount, "method": withdrawal_data.payment_method},
+        ip_address=request.client.host if request.client else None
+    )
+    
+    # Send email notification
+    await email_service.send_withdrawal_notification(
+        user_email=current_user['email'],
+        amount=withdrawal_data.amount,
+        status="pending"
+    )
     
     return {"success": True, "withdrawal_id": withdrawal.id, "message": "Withdrawal request submitted"}
 
