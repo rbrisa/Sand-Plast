@@ -23,7 +23,7 @@ async def create_super_admin():
     # Super admin credentials
     super_admin_email = input("Enter super admin email: ")
     super_admin_password = input("Enter super admin password: ")
-    super_admin_name = input("Enter super admin name/company: ")
+    super_admin_name = input("Enter super admin name/company (default: AOK Admin): ") or "AOK Admin"
     
     # Check if super admin already exists
     existing = await db.users.find_one({"email": super_admin_email})
