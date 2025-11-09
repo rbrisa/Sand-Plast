@@ -1182,7 +1182,7 @@ async def get_user_audit_logs(user_id: str, limit: int = 100, current_user: dict
 # Security - 2FA endpoints
 @api_router.post("/security/2fa/enable")
 async def enable_2fa(current_user: dict = Depends(get_current_user)):
-    \"\"\"Active 2FA pour l'utilisateur\"\"\"
+    """Active 2FA pour l'utilisateur"""
     # Generate secret
     secret = security_service.generate_2fa_secret()
     
