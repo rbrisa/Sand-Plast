@@ -19,6 +19,8 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentCancel from "@/pages/PaymentCancel";
 import Withdrawals from "@/pages/Withdrawals";
 import PlatformRevenue from "@/pages/PlatformRevenue";
+import Security2FA from "@/pages/Security2FA";
+import AuditLogs from "@/pages/AuditLogs";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
