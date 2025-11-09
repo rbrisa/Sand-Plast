@@ -1275,20 +1275,37 @@ async def health_check():
 
 app.include_router(api_router)
 
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=config.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Logging Configuration
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(ROOT_DIR / 'logs' / 'app.log'),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
+# Create logs directory
+(ROOT_DIR / 'logs').mkdir(exist_ok=True)
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info(f"AOK Platform starting up - Version 2.0.0")
+    logger.info(f"Rate limiting: {'Enabled' if config.RATE_LIMIT_ENABLED else 'Disabled'}")
+    logger.info(f"Audit logging: {'Enabled' if config.AUDIT_LOG_ENABLED else 'Disabled'}")
+    logger.info(f"Email service: {'Configured' if config.SENDGRID_API_KEY else 'Mock mode'}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    logger.info("AOK Platform shutting down")
     client.close()
