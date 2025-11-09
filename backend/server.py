@@ -193,6 +193,33 @@ class PaymentTransaction(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+class Transaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    type: str  # "bid_won", "commission", "withdrawal", "deposit"
+    user_id: str
+    amount: float
+    commission_amount: float = 0.0
+    description: str
+    related_id: Optional[str] = None  # bid_id, campaign_id, etc.
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class WithdrawalRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    amount: float
+    status: str = "pending"  # pending, approved, rejected, completed
+    payment_method: str
+    payment_details: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    processed_at: Optional[str] = None
+
+class WithdrawalRequestCreate(BaseModel):
+    amount: float
+    payment_method: str
+    payment_details: str
+
 class CheckoutRequest(BaseModel):
     package_id: str
     origin_url: str
