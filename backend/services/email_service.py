@@ -68,7 +68,7 @@ class EmailService:
                     
                     <h3>🚀 Prochaines étapes :</h3>
                     <ul>
-                        {'<li>Créez votre première campagne publicitaire</li><li>Ajoutez vos créatifs</li><li>Rechargez votre compte</li>' if user_role == 'advertiser' else '<li>Ajoutez vos inventaires publicitaires</li><li>Configurez vos espaces pub</li><li>Commencez à gagner de l\'argent</li>'}
+                        {'<li>Créez votre première campagne publicitaire</li><li>Ajoutez vos créatifs</li><li>Rechargez votre compte</li>' if user_role == 'advertiser' else '<li>Ajoutez vos inventaires publicitaires</li><li>Configurez vos espaces pub</li><li>Commencez à gagner de l argent</li>'}
                     </ul>
                     
                     <p>Si vous avez des questions, notre équipe support est là pour vous aider.</p>
