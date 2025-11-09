@@ -466,6 +466,10 @@ async def submit_bid(campaign_id: str, inventory_id: str, bid_amount: float, cur
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
     
+    # Check if advertiser has enough balance
+    if current_user['balance'] < bid_amount:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+    
     won = bid_amount >= inventory['min_cpm']
     
     bid = Bid(
@@ -478,6 +482,57 @@ async def submit_bid(campaign_id: str, inventory_id: str, bid_amount: float, cur
     await db.bids.insert_one(bid.model_dump())
     
     if won:
+        # Calculate commission
+        commission = bid_amount * PLATFORM_COMMISSION_RATE
+        publisher_payment = bid_amount - commission
+        
+        # Deduct from advertiser
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {"$inc": {"balance": -bid_amount}}
+        )
+        
+        # Credit publisher (minus commission)
+        await db.users.update_one(
+            {"id": inventory['publisher_id']},
+            {"$inc": {"balance": publisher_payment}}
+        )
+        
+        # Record transactions
+        # Advertiser transaction
+        adv_transaction = Transaction(
+            type="bid_won",
+            user_id=current_user['id'],
+            amount=-bid_amount,
+            commission_amount=0,
+            description=f"Bid won for inventory {inventory_id}",
+            related_id=bid.id
+        )
+        await db.transactions.insert_one(adv_transaction.model_dump())
+        
+        # Publisher transaction
+        pub_transaction = Transaction(
+            type="bid_won",
+            user_id=inventory['publisher_id'],
+            amount=publisher_payment,
+            commission_amount=commission,
+            description=f"Revenue from inventory {inventory_id}",
+            related_id=bid.id
+        )
+        await db.transactions.insert_one(pub_transaction.model_dump())
+        
+        # Platform commission transaction
+        platform_transaction = Transaction(
+            type="commission",
+            user_id="platform",
+            amount=commission,
+            commission_amount=commission,
+            description=f"Commission from bid {bid.id}",
+            related_id=bid.id
+        )
+        await db.transactions.insert_one(platform_transaction.model_dump())
+        
+        # Create impression
         creative = await db.ad_creatives.find_one({"campaign_id": campaign_id}, {"_id": 0})
         if creative:
             impression = Impression(
@@ -488,7 +543,7 @@ async def submit_bid(campaign_id: str, inventory_id: str, bid_amount: float, cur
             )
             await db.impressions.insert_one(impression.model_dump())
     
-    return {"won": won, "bid_id": bid.id}
+    return {"won": won, "bid_id": bid.id, "commission": commission if won else 0, "publisher_payment": publisher_payment if won else 0}
 
 # Analytics endpoints
 @api_router.get("/analytics/dashboard")
