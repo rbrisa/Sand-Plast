@@ -113,7 +113,7 @@ const AuditLogs = () => {
                     <SelectValue placeholder="Toutes les actions" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes</SelectItem>
+                    <SelectItem value="all">Toutes</SelectItem>
                     <SelectItem value="LOGIN_SUCCESS">Connexion réussie</SelectItem>
                     <SelectItem value="LOGIN_FAILED">Connexion échouée</SelectItem>
                     <SelectItem value="USER_REGISTERED">Inscription</SelectItem>
