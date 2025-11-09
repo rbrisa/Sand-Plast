@@ -1,54 +1,90 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import axios from "axios";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+
+// Pages
+import Landing from "@/pages/Landing";
+import Dashboard from "@/pages/Dashboard";
+import Campaigns from "@/pages/Campaigns";
+import CampaignDetail from "@/pages/CampaignDetail";
+import AdCreatives from "@/pages/AdCreatives";
+import Inventory from "@/pages/Inventory";
+import Analytics from "@/pages/Analytics";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+// Auth context
+export const AuthContext = React.createContext();
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        try {
+          const response = await axios.get(`${API}/auth/me`, {
+            headers: { Authorization: `Bearer ${storedToken}` }
+          });
+          setUser(response.data);
+          setToken(storedToken);
+        } catch (error) {
+          localStorage.removeItem("token");
+          setToken(null);
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
+  }, []);
+
+  const login = (userData, userToken) => {
+    setUser(userData);
+    setToken(userToken);
+    localStorage.setItem("token", userToken);
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem("token");
+    toast.success("Déconnecté avec succès");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Landing />} />
+            <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/" />} />
+            <Route path="/campaigns" element={token ? <Campaigns /> : <Navigate to="/" />} />
+            <Route path="/campaigns/:id" element={token ? <CampaignDetail /> : <Navigate to="/" />} />
+            <Route path="/creatives" element={token ? <AdCreatives /> : <Navigate to="/" />} />
+            <Route path="/inventory" element={token ? <Inventory /> : <Navigate to="/" />} />
+            <Route path="/analytics" element={token ? <Analytics /> : <Navigate to="/" />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster position="top-right" richColors />
+      </div>
+    </AuthContext.Provider>
   );
 }
 
+import React from "react";
 export default App;
