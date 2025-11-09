@@ -17,6 +17,8 @@ import AdminPanel from "@/pages/AdminPanel";
 import Payment from "@/pages/Payment";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentCancel from "@/pages/PaymentCancel";
+import Withdrawals from "@/pages/Withdrawals";
+import PlatformRevenue from "@/pages/PlatformRevenue";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
