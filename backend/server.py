@@ -1266,7 +1266,7 @@ async def disable_2fa(token: str, current_user: dict = Depends(get_current_user)
 # Health check endpoint (no rate limit)
 @api_router.get("/health")
 async def health_check():
-    \"\"\"Endpoint de santé\"\"\"
+    """Endpoint de santé"""
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
