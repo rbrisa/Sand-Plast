@@ -128,8 +128,8 @@ const Landing = () => {
                 </CardTitle>
                 <CardDescription>
                   {isLogin
-                    ? "Connectez-vous à votre compte RTB"
-                    : "Rejoignez notre plateforme RTB aujourd'hui"}
+                    ? "Connectez-vous à votre compte AOK"
+                    : "Rejoignez notre plateforme AOK aujourd'hui"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
