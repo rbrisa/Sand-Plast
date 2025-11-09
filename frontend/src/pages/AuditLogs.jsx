@@ -133,7 +133,7 @@ const AuditLogs = () => {
                     <SelectValue placeholder="Tous les types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous</SelectItem>
+                    <SelectItem value="all">Tous</SelectItem>
                     <SelectItem value="user">Utilisateur</SelectItem>
                     <SelectItem value="campaign">Campagne</SelectItem>
                     <SelectItem value="payment">Paiement</SelectItem>
