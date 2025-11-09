@@ -61,6 +61,9 @@ PAYMENT_PACKAGES = {
     "enterprise": {"amount": 1000.0, "name": "Enterprise Package", "credits": 1200}
 }
 
+# Platform Settings
+PLATFORM_COMMISSION_RATE = 0.20  # 20% commission on each bid
+
 # Models
 class UserRegister(BaseModel):
     email: EmailStr
