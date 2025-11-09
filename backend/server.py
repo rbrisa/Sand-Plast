@@ -1071,6 +1071,208 @@ async def get_my_transactions(current_user: dict = Depends(get_current_user)):
     ).sort("created_at", -1).to_list(100)
     return transactions
 
+# PDF Reports
+@api_router.get("/reports/campaign/{campaign_id}/pdf")
+async def generate_campaign_report_pdf(campaign_id: str, current_user: dict = Depends(get_current_user)):
+    \"\"\"Génère un rapport PDF pour une campagne\"\"\"
+    # Get campaign analytics
+    campaign = await db.campaigns.find_one({"id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    total_impressions = await db.impressions.count_documents({"campaign_id": campaign_id})
+    total_clicks = await db.clicks.count_documents({"campaign_id": campaign_id})
+    total_conversions = await db.conversions.count_documents({"campaign_id": campaign_id})
+    
+    impressions = await db.impressions.find({"campaign_id": campaign_id}, {"_id": 0}).to_list(10000)
+    total_spend = sum(imp['cost'] for imp in impressions)
+    
+    ctr = (total_clicks / total_impressions * 100) if total_impressions > 0 else 0
+    cvr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+    
+    report_data = {
+        "campaign_id": campaign_id,
+        "campaign_name": campaign['name'],
+        "impressions": total_impressions,
+        "clicks": total_clicks,
+        "ctr": ctr,
+        "conversions": total_conversions,
+        "cvr": cvr,
+        "spend": total_spend
+    }
+    
+    # Generate PDF
+    pdf_path = pdf_service.generate_campaign_report(report_data)
+    
+    # Audit log
+    await audit_service.log_action(
+        user_id=current_user['id'],
+        action="REPORT_GENERATED",
+        resource_type="campaign",
+        resource_id=campaign_id,
+        details={"report_type": "pdf"}
+    )
+    
+    return FileResponse(pdf_path, media_type='application/pdf', filename=f"campaign_report_{campaign_id}.pdf")
+
+@api_router.post("/invoices/generate")
+async def generate_invoice(current_user: dict = Depends(get_current_user)):
+    \"\"\"Génère une facture pour un paiement\"\"\"
+    # Get recent completed payment
+    payment = await db.payment_transactions.find_one(
+        {"user_id": current_user['id'], "payment_status": "paid"},
+        {"_id": 0},
+        sort=[("created_at", -1)]
+    )
+    
+    if not payment:
+        raise HTTPException(status_code=404, detail="No completed payment found")
+    
+    invoice_data = {
+        "invoice_number": f"INV-{payment['id'][:8].upper()}",
+        "customer_name": current_user['company_name'],
+        "customer_email": current_user['email'],
+        "items": [
+            {
+                "description": payment['metadata'].get('package_name', 'Credit Package'),
+                "quantity": 1,
+                "unit_price": payment['amount'],
+                "total": payment['amount']
+            }
+        ],
+        "total": payment['amount']
+    }
+    
+    # Generate PDF invoice
+    pdf_path = pdf_service.generate_invoice(invoice_data)
+    
+    # Audit log
+    await audit_service.log_action(
+        user_id=current_user['id'],
+        action="INVOICE_GENERATED",
+        resource_type="payment",
+        resource_id=payment['id'],
+        details={"amount": payment['amount']}
+    )
+    
+    return FileResponse(pdf_path, media_type='application/pdf', filename=f"invoice_{invoice_data['invoice_number']}.pdf")
+
+# Audit Logs (Admin only)
+@api_router.get("/admin/audit-logs")
+async def get_audit_logs(
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    limit: int = 100,
+    current_user: dict = Depends(require_admin)
+):
+    \"\"\"Récupère les logs d'audit\"\"\"
+    logs = await audit_service.search_logs(
+        action=action,
+        resource_type=resource_type,
+        limit=limit
+    )
+    return logs
+
+@api_router.get("/admin/audit-logs/user/{user_id}")
+async def get_user_audit_logs(user_id: str, limit: int = 100, current_user: dict = Depends(require_admin)):
+    \"\"\"Récupère les logs d'un utilisateur spécifique\"\"\"
+    logs = await audit_service.get_user_activity(user_id, limit)
+    return logs
+
+# Security - 2FA endpoints
+@api_router.post("/security/2fa/enable")
+async def enable_2fa(current_user: dict = Depends(get_current_user)):
+    \"\"\"Active 2FA pour l'utilisateur\"\"\"
+    # Generate secret
+    secret = security_service.generate_2fa_secret()
+    
+    # Generate QR code
+    qr_code = security_service.generate_2fa_qr_code(current_user['email'], secret)
+    
+    # Store secret (temporarily, will be confirmed later)
+    await db.users.update_one(
+        {"id": current_user['id']},
+        {"$set": {"two_fa_secret_temp": secret}}
+    )
+    
+    return {
+        "secret": secret,
+        "qr_code": qr_code,
+        "message": "Scannez ce QR code avec Google Authenticator ou Authy"
+    }
+
+@api_router.post("/security/2fa/verify")
+async def verify_2fa_setup(token: str, current_user: dict = Depends(get_current_user)):
+    \"\"\"Vérifie et confirme la configuration 2FA\"\"\"
+    user = await db.users.find_one({"id": current_user['id']})
+    secret = user.get('two_fa_secret_temp')
+    
+    if not secret:
+        raise HTTPException(status_code=400, detail="2FA setup not initiated")
+    
+    # Verify token
+    if security_service.verify_2fa_token(secret, token):
+        # Move secret from temp to permanent
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {
+                "$set": {"two_fa_secret": secret, "two_fa_enabled": True},
+                "$unset": {"two_fa_secret_temp": ""}
+            }
+        )
+        
+        # Audit log
+        await audit_service.log_action(
+            user_id=current_user['id'],
+            action="2FA_ENABLED",
+            resource_type="security",
+            resource_id=current_user['id']
+        )
+        
+        return {"success": True, "message": "2FA activé avec succès"}
+    else:
+        raise HTTPException(status_code=400, detail="Token invalide")
+
+@api_router.post("/security/2fa/disable")
+async def disable_2fa(token: str, current_user: dict = Depends(get_current_user)):
+    \"\"\"Désactive 2FA\"\"\"
+    user = await db.users.find_one({"id": current_user['id']})
+    
+    if not user.get('two_fa_enabled'):
+        raise HTTPException(status_code=400, detail="2FA not enabled")
+    
+    # Verify token before disabling
+    if security_service.verify_2fa_token(user['two_fa_secret'], token):
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {
+                "$set": {"two_fa_enabled": False},
+                "$unset": {"two_fa_secret": ""}
+            }
+        )
+        
+        # Audit log
+        await audit_service.log_action(
+            user_id=current_user['id'],
+            action="2FA_DISABLED",
+            resource_type="security",
+            resource_id=current_user['id']
+        )
+        
+        return {"success": True, "message": "2FA désactivé"}
+    else:
+        raise HTTPException(status_code=400, detail="Token invalide")
+
+# Health check endpoint (no rate limit)
+@api_router.get("/health")
+async def health_check():
+    \"\"\"Endpoint de santé\"\"\"
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "2.0.0"
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
