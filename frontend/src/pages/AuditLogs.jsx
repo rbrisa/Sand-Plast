@@ -36,8 +36,8 @@ const AuditLogs = () => {
   const fetchLogs = async () => {
     try {
       const params = new URLSearchParams();
-      if (filters.action) params.append("action", filters.action);
-      if (filters.resource_type) params.append("resource_type", filters.resource_type);
+      if (filters.action && filters.action !== "all") params.append("action", filters.action);
+      if (filters.resource_type && filters.resource_type !== "all") params.append("resource_type", filters.resource_type);
       
       const response = await axios.get(`${API}/admin/audit-logs?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
