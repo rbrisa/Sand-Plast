@@ -1175,7 +1175,7 @@ async def get_audit_logs(
 
 @api_router.get("/admin/audit-logs/user/{user_id}")
 async def get_user_audit_logs(user_id: str, limit: int = 100, current_user: dict = Depends(require_admin)):
-    \"\"\"Récupère les logs d'un utilisateur spécifique\"\"\"
+    """Récupère les logs d'un utilisateur spécifique"""
     logs = await audit_service.get_user_activity(user_id, limit)
     return logs
 
