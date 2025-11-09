@@ -360,9 +360,16 @@ async def get_admin_statistics(current_user: dict = Depends(require_admin)):
     total_campaigns = await db.campaigns.count_documents({})
     total_impressions = await db.impressions.count_documents({})
     
-    # Calculate total revenue
-    transactions = await db.payment_transactions.find({"payment_status": "paid"}, {"_id": 0}).to_list(10000)
-    total_revenue = sum(t['amount'] for t in transactions)
+    # Calculate total revenue from payments
+    payment_transactions = await db.payment_transactions.find({"payment_status": "paid"}, {"_id": 0}).to_list(10000)
+    total_payments = sum(t['amount'] for t in payment_transactions)
+    
+    # Calculate platform commissions
+    commission_transactions = await db.transactions.find({"type": "commission"}, {"_id": 0}).to_list(10000)
+    platform_commission = sum(t['amount'] for t in commission_transactions)
+    
+    # Total bids
+    total_bids = await db.bids.count_documents({"won": True})
     
     return {
         "total_users": total_users,
@@ -370,7 +377,36 @@ async def get_admin_statistics(current_user: dict = Depends(require_admin)):
         "total_publishers": total_publishers,
         "total_campaigns": total_campaigns,
         "total_impressions": total_impressions,
-        "total_revenue": round(total_revenue, 2)
+        "total_bids": total_bids,
+        "total_payments": round(total_payments, 2),
+        "platform_commission": round(platform_commission, 2),
+        "total_revenue": round(total_payments + platform_commission, 2)
+    }
+
+@api_router.get("/admin/platform-revenue")
+async def get_platform_revenue(current_user: dict = Depends(require_super_admin)):
+    # Get all commission transactions
+    commission_transactions = await db.transactions.find(
+        {"type": "commission"}, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    
+    total_commission = sum(t['amount'] for t in commission_transactions)
+    
+    # Get payment revenue
+    payment_transactions = await db.payment_transactions.find(
+        {"payment_status": "paid"}, 
+        {"_id": 0}
+    ).to_list(10000)
+    
+    total_payments = sum(t['amount'] for t in payment_transactions)
+    
+    return {
+        "total_commission": round(total_commission, 2),
+        "total_payments": round(total_payments, 2),
+        "total_platform_revenue": round(total_commission + total_payments, 2),
+        "commission_rate": PLATFORM_COMMISSION_RATE * 100,
+        "recent_commissions": commission_transactions[:10]
     }
 
 # Campaign endpoints
