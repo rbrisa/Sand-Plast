@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -27,6 +27,9 @@ SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production'
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
+# Stripe Configuration
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
 security = HTTPBearer()
 
 app = FastAPI()
@@ -34,6 +37,8 @@ api_router = APIRouter(prefix="/api")
 
 # Enums
 class UserRole(str, Enum):
+    SUPER_ADMIN = "super_admin"
+    ADMIN = "admin"
     ADVERTISER = "advertiser"
     PUBLISHER = "publisher"
 
@@ -48,6 +53,13 @@ class AdType(str, Enum):
     VIDEO = "video"
     NATIVE = "native"
     MOBILE = "mobile"
+
+# Payment Packages
+PAYMENT_PACKAGES = {
+    "starter": {"amount": 100.0, "name": "Starter Package", "credits": 100},
+    "professional": {"amount": 500.0, "name": "Professional Package", "credits": 550},
+    "enterprise": {"amount": 1000.0, "name": "Enterprise Package", "credits": 1200}
+}
 
 # Models
 class UserRegister(BaseModel):
@@ -67,7 +79,13 @@ class User(BaseModel):
     role: UserRole
     company_name: str
     balance: float = 0.0
+    is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class AdminCreate(BaseModel):
+    email: EmailStr
+    password: str
+    company_name: str
 
 class Campaign(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -157,6 +175,25 @@ class Conversion(BaseModel):
     conversion_value: float
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+class PaymentTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_id: str
+    amount: float
+    currency: str
+    package_id: str
+    credits: float
+    payment_status: str = "pending"
+    status: str = "initiated"
+    metadata: Dict[str, Any] = {}
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class CheckoutRequest(BaseModel):
+    package_id: str
+    origin_url: str
+
 # Auth utilities
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -181,11 +218,23 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         user = await db.users.find_one({"id": user_id}, {"_id": 0})
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
+        if not user.get('is_active', True):
+            raise HTTPException(status_code=403, detail="Account is inactive")
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    if current_user['role'] not in [UserRole.SUPER_ADMIN, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+async def require_super_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    if current_user['role'] != UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    return current_user
 
 # Auth endpoints
 @api_router.post("/auth/register")
@@ -195,12 +244,16 @@ async def register(user_data: UserRegister):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Prevent non-admins from creating admin accounts
+    if user_data.role in [UserRole.SUPER_ADMIN, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Cannot register as admin")
+    
     # Create user
     user = User(
         email=user_data.email,
         role=user_data.role,
         company_name=user_data.company_name,
-        balance=10000.0 if user_data.role == UserRole.ADVERTISER else 0.0
+        balance=1000.0 if user_data.role == UserRole.ADVERTISER else 0.0
     )
     
     user_doc = user.model_dump()
@@ -217,6 +270,9 @@ async def login(credentials: UserLogin):
     if not user or not verify_password(credentials.password, user['password']):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    if not user.get('is_active', True):
+        raise HTTPException(status_code=403, detail="Account is inactive")
+    
     token = create_access_token({"sub": user['id'], "role": user['role']})
     user.pop('password')
     return {"user": user, "token": token}
@@ -225,6 +281,67 @@ async def login(credentials: UserLogin):
 async def get_me(current_user: dict = Depends(get_current_user)):
     current_user.pop('password', None)
     return current_user
+
+# Admin endpoints
+@api_router.post("/admin/create")
+async def create_admin(admin_data: AdminCreate, current_user: dict = Depends(require_super_admin)):
+    # Check if user exists
+    existing = await db.users.find_one({"email": admin_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create admin
+    admin = User(
+        email=admin_data.email,
+        role=UserRole.ADMIN,
+        company_name=admin_data.company_name,
+        balance=0.0
+    )
+    
+    admin_doc = admin.model_dump()
+    admin_doc['password'] = hash_password(admin_data.password)
+    
+    await db.users.insert_one(admin_doc)
+    return {"message": "Admin created successfully", "admin": admin}
+
+@api_router.get("/admin/users")
+async def get_all_users(current_user: dict = Depends(require_admin)):
+    users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(10000)
+    return users
+
+@api_router.put("/admin/users/{user_id}/status")
+async def toggle_user_status(user_id: str, is_active: bool, current_user: dict = Depends(require_admin)):
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent deactivating super admin
+    if user['role'] == UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Cannot modify super admin")
+    
+    await db.users.update_one({"id": user_id}, {"$set": {"is_active": is_active}})
+    return {"success": True}
+
+@api_router.get("/admin/statistics")
+async def get_admin_statistics(current_user: dict = Depends(require_admin)):
+    total_users = await db.users.count_documents({})
+    total_advertisers = await db.users.count_documents({"role": UserRole.ADVERTISER})
+    total_publishers = await db.users.count_documents({"role": UserRole.PUBLISHER})
+    total_campaigns = await db.campaigns.count_documents({})
+    total_impressions = await db.impressions.count_documents({})
+    
+    # Calculate total revenue
+    transactions = await db.payment_transactions.find({"payment_status": "paid"}, {"_id": 0}).to_list(10000)
+    total_revenue = sum(t['amount'] for t in transactions)
+    
+    return {
+        "total_users": total_users,
+        "total_advertisers": total_advertisers,
+        "total_publishers": total_publishers,
+        "total_campaigns": total_campaigns,
+        "total_impressions": total_impressions,
+        "total_revenue": round(total_revenue, 2)
+    }
 
 # Campaign endpoints
 @api_router.post("/campaigns", response_model=Campaign)
@@ -311,17 +428,14 @@ async def submit_bid(campaign_id: str, inventory_id: str, bid_amount: float, cur
     if current_user['role'] != UserRole.ADVERTISER:
         raise HTTPException(status_code=403, detail="Only advertisers can submit bids")
     
-    # Check campaign exists and belongs to user
     campaign = await db.campaigns.find_one({"id": campaign_id, "advertiser_id": current_user['id']}, {"_id": 0})
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
     
-    # Check inventory exists
     inventory = await db.inventory.find_one({"id": inventory_id}, {"_id": 0})
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
     
-    # Process bid (simplified - in real RTB this would be in microseconds)
     won = bid_amount >= inventory['min_cpm']
     
     bid = Bid(
@@ -333,7 +447,6 @@ async def submit_bid(campaign_id: str, inventory_id: str, bid_amount: float, cur
     
     await db.bids.insert_one(bid.model_dump())
     
-    # If won, create impression
     if won:
         creative = await db.ad_creatives.find_one({"campaign_id": campaign_id}, {"_id": 0})
         if creative:
@@ -351,7 +464,6 @@ async def submit_bid(campaign_id: str, inventory_id: str, bid_amount: float, cur
 @api_router.get("/analytics/dashboard")
 async def get_dashboard_analytics(current_user: dict = Depends(get_current_user)):
     if current_user['role'] == UserRole.ADVERTISER:
-        # Advertiser analytics
         campaigns = await db.campaigns.find({"advertiser_id": current_user['id']}, {"_id": 0}).to_list(1000)
         campaign_ids = [c['id'] for c in campaigns]
         
@@ -359,7 +471,6 @@ async def get_dashboard_analytics(current_user: dict = Depends(get_current_user)
         total_clicks = await db.clicks.count_documents({"campaign_id": {"$in": campaign_ids}})
         total_conversions = await db.conversions.count_documents({"campaign_id": {"$in": campaign_ids}})
         
-        # Calculate total spend
         impressions = await db.impressions.find({"campaign_id": {"$in": campaign_ids}}, {"_id": 0}).to_list(10000)
         total_spend = sum(imp['cost'] for imp in impressions)
         
@@ -377,7 +488,6 @@ async def get_dashboard_analytics(current_user: dict = Depends(get_current_user)
             "balance": current_user['balance']
         }
     else:
-        # Publisher analytics
         inventory = await db.inventory.find({"publisher_id": current_user['id']}, {"_id": 0}).to_list(1000)
         inventory_ids = [inv['id'] for inv in inventory]
         
@@ -419,7 +529,7 @@ async def get_campaign_analytics(campaign_id: str, current_user: dict = Depends(
         "cvr": round(cvr, 2)
     }
 
-# Tracking endpoints (for demo purposes)
+# Tracking endpoints
 @api_router.post("/track/click")
 async def track_click(impression_id: str, campaign_id: str):
     click = Click(impression_id=impression_id, campaign_id=campaign_id)
@@ -431,6 +541,150 @@ async def track_conversion(click_id: str, campaign_id: str, conversion_value: fl
     conversion = Conversion(click_id=click_id, campaign_id=campaign_id, conversion_value=conversion_value)
     await db.conversions.insert_one(conversion.model_dump())
     return {"success": True}
+
+# Payment endpoints
+@api_router.get("/payments/packages")
+async def get_payment_packages():
+    return {"packages": PAYMENT_PACKAGES}
+
+@api_router.post("/payments/checkout")
+async def create_checkout_session(checkout_data: CheckoutRequest, current_user: dict = Depends(get_current_user)):
+    # Validate package
+    if checkout_data.package_id not in PAYMENT_PACKAGES:
+        raise HTTPException(status_code=400, detail="Invalid package")
+    
+    package = PAYMENT_PACKAGES[checkout_data.package_id]
+    
+    try:
+        from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+        
+        # Initialize Stripe
+        webhook_url = f"{checkout_data.origin_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Create success and cancel URLs
+        success_url = f"{checkout_data.origin_url}/payment/success?session_id={{{{CHECKOUT_SESSION_ID}}}}"
+        cancel_url = f"{checkout_data.origin_url}/payment/cancel"
+        
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=package['amount'],
+            currency="usd",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": current_user['id'],
+                "package_id": checkout_data.package_id,
+                "credits": str(package['credits'])
+            }
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record
+        transaction = PaymentTransaction(
+            user_id=current_user['id'],
+            session_id=session.session_id,
+            amount=package['amount'],
+            currency="usd",
+            package_id=checkout_data.package_id,
+            credits=package['credits'],
+            payment_status="pending",
+            status="initiated",
+            metadata={
+                "package_name": package['name'],
+                "user_email": current_user['email']
+            }
+        )
+        
+        await db.payment_transactions.insert_one(transaction.model_dump())
+        
+        return {"url": session.url, "session_id": session.session_id}
+        
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/payments/status/{session_id}")
+async def get_payment_status(session_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        from emergentintegrations.payments.stripe.checkout import StripeCheckout
+        
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+        checkout_status = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Update transaction if payment successful and not already processed
+        if checkout_status.payment_status == "paid":
+            transaction = await db.payment_transactions.find_one({"session_id": session_id})
+            
+            if transaction and transaction['payment_status'] != "paid":
+                # Update transaction
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {
+                        "$set": {
+                            "payment_status": "paid",
+                            "status": "completed",
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                
+                # Add credits to user balance
+                await db.users.update_one(
+                    {"id": transaction['user_id']},
+                    {"$inc": {"balance": transaction['credits']}}
+                )
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "amount_total": checkout_status.amount_total / 100,
+            "currency": checkout_status.currency
+        }
+        
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    try:
+        from emergentintegrations.payments.stripe.checkout import StripeCheckout
+        
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        # Process webhook
+        if webhook_response.payment_status == "paid":
+            transaction = await db.payment_transactions.find_one({"session_id": webhook_response.session_id})
+            
+            if transaction and transaction['payment_status'] != "paid":
+                await db.payment_transactions.update_one(
+                    {"session_id": webhook_response.session_id},
+                    {
+                        "$set": {
+                            "payment_status": "paid",
+                            "status": "completed",
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                
+                await db.users.update_one(
+                    {"id": transaction['user_id']},
+                    {"$inc": {"balance": transaction['credits']}}
+                )
+        
+        return {"success": True}
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 app.include_router(api_router)
 
