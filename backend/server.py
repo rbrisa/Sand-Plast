@@ -1117,7 +1117,7 @@ async def generate_campaign_report_pdf(campaign_id: str, current_user: dict = De
 
 @api_router.post("/invoices/generate")
 async def generate_invoice(current_user: dict = Depends(get_current_user)):
-    \"\"\"Génère une facture pour un paiement\"\"\"
+    """Génère une facture pour un paiement"""
     # Get recent completed payment
     payment = await db.payment_transactions.find_one(
         {"user_id": current_user['id'], "payment_status": "paid"},
