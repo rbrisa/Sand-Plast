@@ -291,13 +291,8 @@ class RTBPlatformTester:
         success, response = self.run_test(
             "Submit Bid",
             "POST",
-            "bids/submit",
+            f"bids/submit?campaign_id={self.campaign_id}&inventory_id={self.inventory_id}&bid_amount=6.0",
             200,
-            data={
-                "campaign_id": self.campaign_id,
-                "inventory_id": self.inventory_id,
-                "bid_amount": 6.0
-            },
             token=self.advertiser_token
         )
         return success
