@@ -13,6 +13,10 @@ import CampaignDetail from "@/pages/CampaignDetail";
 import AdCreatives from "@/pages/AdCreatives";
 import Inventory from "@/pages/Inventory";
 import Analytics from "@/pages/Analytics";
+import AdminPanel from "@/pages/AdminPanel";
+import Payment from "@/pages/Payment";
+import PaymentSuccess from "@/pages/PaymentSuccess";
+import PaymentCancel from "@/pages/PaymentCancel";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
