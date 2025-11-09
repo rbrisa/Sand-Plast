@@ -1235,7 +1235,7 @@ async def verify_2fa_setup(token: str, current_user: dict = Depends(get_current_
 
 @api_router.post("/security/2fa/disable")
 async def disable_2fa(token: str, current_user: dict = Depends(get_current_user)):
-    \"\"\"Désactive 2FA\"\"\"
+    """Désactive 2FA"""
     user = await db.users.find_one({"id": current_user['id']})
     
     if not user.get('two_fa_enabled'):
