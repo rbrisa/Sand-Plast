@@ -52,7 +52,7 @@ const Landing = () => {
           {/* Left side - Marketing content */}
           <div className="flex-1 animate-fade-in">
             <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Plateforme <span className="gradient-text">RTB</span> Nouvelle Génération
+              <span className="gradient-text">AOK</span> - Plateforme RTB Nouvelle Génération
             </h1>
             <p className="text-xl text-gray-600 mb-8">
               Optimisez vos campagnes publicitaires avec notre système d'enchères en temps réel.
