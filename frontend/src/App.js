@@ -92,6 +92,8 @@ function App() {
             <Route path="/payment/cancel" element={token ? <PaymentCancel /> : <Navigate to="/" />} />
             <Route path="/withdrawals" element={token ? <Withdrawals /> : <Navigate to="/" />} />
             <Route path="/platform-revenue" element={token ? <PlatformRevenue /> : <Navigate to="/" />} />
+            <Route path="/security/2fa" element={token ? <Security2FA /> : <Navigate to="/" />} />
+            <Route path="/admin/audit-logs" element={token ? <AuditLogs /> : <Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" richColors />
