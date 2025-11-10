@@ -1,0 +1,111 @@
+{
+  "common": {
+    "aok": "AOK",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "submit": "Soumettre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "email": "Email",
+    "password": "Mot de passe",
+    "company": "Entreprise"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "campaigns": "Campagnes",
+    "creatives": "Créatifs",
+    "inventory": "Inventaires",
+    "analytics": "Analytics",
+    "administration": "Administration",
+    "revenue": "Revenus AOK",
+    "auditLogs": "Logs d'Audit",
+    "withdrawals": "Retraits",
+    "recharge": "Recharger",
+    "security2FA": "Sécurité 2FA",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "loginTitle": "Connectez-vous à votre compte AOK",
+    "registerTitle": "Rejoignez notre plateforme AOK aujourd'hui",
+    "advertiser": "Annonceur",
+    "publisher": "Éditeur",
+    "accountType": "Type de compte",
+    "noAccount": "Pas encore de compte ? S'inscrire",
+    "hasAccount": "Déjà un compte ? Se connecter",
+    "loginSuccess": "Connexion réussie",
+    "logoutSuccess": "Déconnecté avec succès"
+  },
+  "landing": {
+    "hero": "Plateforme RTB Nouvelle Génération",
+    "subtitle": "Optimisez vos campagnes publicitaires avec notre système d'enchères en temps réel.",
+    "feature1Title": "Enchères en Temps Réel",
+    "feature1Desc": "Système d'enchères ultrarapide pour maximiser vos opportunités",
+    "feature2Title": "Ciblage Avancé",
+    "feature2Desc": "Atteignez votre audience avec précision géographique et démographique",
+    "feature3Title": "Analytics Détaillés",
+    "feature3Desc": "Suivez vos performances en temps réel avec des métriques avancées",
+    "feature4Title": "Optimisation Continue",
+    "feature4Desc": "Algorithmes intelligents pour améliorer votre ROI automatiquement"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "advertiserOverview": "Vue d'ensemble de vos campagnes publicitaires",
+    "publisherOverview": "Statistiques de vos inventaires publicitaires",
+    "activeCampaigns": "Campagnes Actives",
+    "impressions": "Impressions",
+    "clicks": "Clics",
+    "spending": "Dépenses",
+    "balance": "Solde",
+    "inventories": "Inventaires",
+    "revenue": "Revenus",
+    "avgCPM": "CPM moyen",
+    "quickActions": "Actions rapides"
+  },
+  "campaigns": {
+    "title": "Campagnes",
+    "subtitle": "Gérez vos campagnes publicitaires",
+    "newCampaign": "Nouvelle Campagne",
+    "noCampaigns": "Aucune campagne",
+    "createFirst": "Créez votre première campagne pour commencer",
+    "name": "Nom de la campagne",
+    "totalBudget": "Budget total",
+    "dailyBudget": "Budget journalier",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "activate": "Activer",
+    "pause": "Pause",
+    "status": {
+      "draft": "Brouillon",
+      "active": "Active",
+      "paused": "Pause",
+      "completed": "Complété"
+    }
+  },
+  "payment": {
+    "title": "Recharger votre solde",
+    "subtitle": "Choisissez un forfait et rechargez votre compte instantanément",
+    "currentBalance": "Solde actuel",
+    "buyNow": "Acheter maintenant",
+    "securedByStripe": "Paiements sécurisés par Stripe",
+    "allCards": "Nous acceptons toutes les cartes bancaires majeures"
+  },
+  "language": {
+    "select": "Sélectionner la langue",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ar": "العربية"
+  }
+}

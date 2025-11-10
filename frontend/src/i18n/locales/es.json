@@ -1,0 +1,111 @@
+{
+  "common": {
+    "aok": "AOK",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "submit": "Enviar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "close": "Cerrar",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "company": "Empresa"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "campaigns": "Campañas",
+    "creatives": "Creativos",
+    "inventory": "Inventario",
+    "analytics": "Análisis",
+    "administration": "Administración",
+    "revenue": "Ingresos AOK",
+    "auditLogs": "Registros de Auditoría",
+    "withdrawals": "Retiros",
+    "recharge": "Recargar",
+    "security2FA": "Seguridad 2FA",
+    "logout": "Cerrar sesión"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "loginTitle": "Inicie sesión en su cuenta de AOK",
+    "registerTitle": "Únase a nuestra plataforma AOK hoy",
+    "advertiser": "Anunciante",
+    "publisher": "Editor",
+    "accountType": "Tipo de cuenta",
+    "noAccount": "¿Aún no tiene cuenta? Regístrese",
+    "hasAccount": "¿Ya tiene una cuenta? Inicie sesión",
+    "loginSuccess": "Inicio de sesión exitoso",
+    "logoutSuccess": "Sesión cerrada exitosamente"
+  },
+  "landing": {
+    "hero": "Plataforma RTB de Nueva Generación",
+    "subtitle": "Optimice sus campañas publicitarias con nuestro sistema de pujas en tiempo real.",
+    "feature1Title": "Pujas en Tiempo Real",
+    "feature1Desc": "Sistema de pujas ultrarrápido para maximizar sus oportunidades",
+    "feature2Title": "Segmentación Avanzada",
+    "feature2Desc": "Alcance a su audiencia con precisión geográfica y demográfica",
+    "feature3Title": "Análisis Detallados",
+    "feature3Desc": "Siga su rendimiento en tiempo real con métricas avanzadas",
+    "feature4Title": "Optimización Continua",
+    "feature4Desc": "Algoritmos inteligentes para mejorar automáticamente su ROI"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "advertiserOverview": "Resumen de sus campañas publicitarias",
+    "publisherOverview": "Estadísticas de sus inventarios publicitarios",
+    "activeCampaigns": "Campañas Activas",
+    "impressions": "Impresiones",
+    "clicks": "Clics",
+    "spending": "Gastos",
+    "balance": "Saldo",
+    "inventories": "Inventarios",
+    "revenue": "Ingresos",
+    "avgCPM": "CPM promedio",
+    "quickActions": "Acciones rápidas"
+  },
+  "campaigns": {
+    "title": "Campañas",
+    "subtitle": "Gestione sus campañas publicitarias",
+    "newCampaign": "Nueva Campaña",
+    "noCampaigns": "Sin campañas",
+    "createFirst": "Cree su primera campaña para comenzar",
+    "name": "Nombre de la campaña",
+    "totalBudget": "Presupuesto total",
+    "dailyBudget": "Presupuesto diario",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de finalización",
+    "activate": "Activar",
+    "pause": "Pausar",
+    "status": {
+      "draft": "Borrador",
+      "active": "Activa",
+      "paused": "Pausada",
+      "completed": "Completada"
+    }
+  },
+  "payment": {
+    "title": "Recargue su saldo",
+    "subtitle": "Elija un paquete y recargue su cuenta al instante",
+    "currentBalance": "Saldo actual",
+    "buyNow": "Comprar ahora",
+    "securedByStripe": "Pagos seguros con Stripe",
+    "allCards": "Aceptamos todas las tarjetas principales"
+  },
+  "language": {
+    "select": "Seleccionar idioma",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ar": "العربية"
+  }
+}

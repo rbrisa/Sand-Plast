@@ -1,0 +1,111 @@
+{
+  "common": {
+    "aok": "AOK",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "email": "Email",
+    "password": "Password",
+    "company": "Company"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "campaigns": "Campaigns",
+    "creatives": "Creatives",
+    "inventory": "Inventory",
+    "analytics": "Analytics",
+    "administration": "Administration",
+    "revenue": "AOK Revenue",
+    "auditLogs": "Audit Logs",
+    "withdrawals": "Withdrawals",
+    "recharge": "Recharge",
+    "security2FA": "2FA Security",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Create Account",
+    "loginTitle": "Login to your AOK account",
+    "registerTitle": "Join our AOK platform today",
+    "advertiser": "Advertiser",
+    "publisher": "Publisher",
+    "accountType": "Account Type",
+    "noAccount": "No account yet? Sign up",
+    "hasAccount": "Already have an account? Log in",
+    "loginSuccess": "Login successful",
+    "logoutSuccess": "Logged out successfully"
+  },
+  "landing": {
+    "hero": "Next Generation RTB Platform",
+    "subtitle": "Optimize your advertising campaigns with our real-time bidding system.",
+    "feature1Title": "Real-Time Bidding",
+    "feature1Desc": "Ultra-fast bidding system to maximize your opportunities",
+    "feature2Title": "Advanced Targeting",
+    "feature2Desc": "Reach your audience with geographic and demographic precision",
+    "feature3Title": "Detailed Analytics",
+    "feature3Desc": "Track your performance in real-time with advanced metrics",
+    "feature4Title": "Continuous Optimization",
+    "feature4Desc": "Smart algorithms to automatically improve your ROI"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "advertiserOverview": "Overview of your advertising campaigns",
+    "publisherOverview": "Statistics of your advertising inventories",
+    "activeCampaigns": "Active Campaigns",
+    "impressions": "Impressions",
+    "clicks": "Clicks",
+    "spending": "Spending",
+    "balance": "Balance",
+    "inventories": "Inventories",
+    "revenue": "Revenue",
+    "avgCPM": "Avg CPM",
+    "quickActions": "Quick Actions"
+  },
+  "campaigns": {
+    "title": "Campaigns",
+    "subtitle": "Manage your advertising campaigns",
+    "newCampaign": "New Campaign",
+    "noCampaigns": "No campaigns",
+    "createFirst": "Create your first campaign to get started",
+    "name": "Campaign name",
+    "totalBudget": "Total budget",
+    "dailyBudget": "Daily budget",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "activate": "Activate",
+    "pause": "Pause",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed"
+    }
+  },
+  "payment": {
+    "title": "Recharge your balance",
+    "subtitle": "Choose a package and recharge your account instantly",
+    "currentBalance": "Current balance",
+    "buyNow": "Buy now",
+    "securedByStripe": "Secured payments by Stripe",
+    "allCards": "We accept all major credit cards"
+  },
+  "language": {
+    "select": "Select language",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ar": "العربية"
+  }
+}
