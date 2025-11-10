@@ -1,0 +1,111 @@
+{
+  "common": {
+    "aok": "AOK",
+    "loading": "جار التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "submit": "إرسال",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "close": "إغلاق",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "company": "الشركة"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "campaigns": "الحملات",
+    "creatives": "الإبداعات",
+    "inventory": "المخزون",
+    "analytics": "التحليلات",
+    "administration": "الإدارة",
+    "revenue": "إيرادات AOK",
+    "auditLogs": "سجلات التدقيق",
+    "withdrawals": "السحوبات",
+    "recharge": "إعادة الشحن",
+    "security2FA": "أمان 2FA",
+    "logout": "تسجيل الخروج"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "loginTitle": "تسجيل الدخول إلى حساب AOK الخاص بك",
+    "registerTitle": "انضم إلى منصة AOK اليوم",
+    "advertiser": "معلن",
+    "publisher": "ناشر",
+    "accountType": "نوع الحساب",
+    "noAccount": "ليس لديك حساب بعد؟ سجل",
+    "hasAccount": "هل لديك حساب بالفعل؟ سجل الدخول",
+    "loginSuccess": "تم تسجيل الدخول بنجاح",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح"
+  },
+  "landing": {
+    "hero": "منصة RTB من الجيل القادم",
+    "subtitle": "قم بتحسين حملاتك الإعلانية باستخدام نظام المزايدة في الوقت الفعلي.",
+    "feature1Title": "المزايدة في الوقت الفعلي",
+    "feature1Desc": "نظام مزايدة فائق السرعة لتعظيم فرصك",
+    "feature2Title": "الاستهداف المتقدم",
+    "feature2Desc": "الوصول إلى جمهورك بدقة جغرافية وديموغرافية",
+    "feature3Title": "التحليلات التفصيلية",
+    "feature3Desc": "تتبع أدائك في الوقت الفعلي بمقاييس متقدمة",
+    "feature4Title": "التحسين المستمر",
+    "feature4Desc": "خوارزميات ذكية لتحسين عائد الاستثمار تلقائيًا"
+  },
+  "dashboard": {
+    "welcome": "مرحبا",
+    "advertiserOverview": "نظرة عامة على حملاتك الإعلانية",
+    "publisherOverview": "إحصائيات مخزونك الإعلاني",
+    "activeCampaigns": "الحملات النشطة",
+    "impressions": "مرات الظهور",
+    "clicks": "النقرات",
+    "spending": "الإنفاق",
+    "balance": "الرصيد",
+    "inventories": "المخزونات",
+    "revenue": "الإيرادات",
+    "avgCPM": "متوسط CPM",
+    "quickActions": "إجراءات سريعة"
+  },
+  "campaigns": {
+    "title": "الحملات",
+    "subtitle": "إدارة حملاتك الإعلانية",
+    "newCampaign": "حملة جديدة",
+    "noCampaigns": "لا توجد حملات",
+    "createFirst": "أنشئ حملتك الأولى للبدء",
+    "name": "اسم الحملة",
+    "totalBudget": "الميزانية الإجمالية",
+    "dailyBudget": "الميزانية اليومية",
+    "startDate": "تاريخ البدء",
+    "endDate": "تاريخ الانتهاء",
+    "activate": "تفعيل",
+    "pause": "إيقاف مؤقت",
+    "status": {
+      "draft": "مسودة",
+      "active": "نشط",
+      "paused": "متوقف",
+      "completed": "مكتمل"
+    }
+  },
+  "payment": {
+    "title": "إعادة شحن رصيدك",
+    "subtitle": "اختر باقة وأعد شحن حسابك على الفور",
+    "currentBalance": "الرصيد الحالي",
+    "buyNow": "اشتر الآن",
+    "securedByStripe": "مدفوعات آمنة بواسطة Stripe",
+    "allCards": "نقبل جميع بطاقات الائتمان الرئيسية"
+  },
+  "language": {
+    "select": "اختر اللغة",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ar": "العربية"
+  }
+}

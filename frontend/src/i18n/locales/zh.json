@@ -1,0 +1,111 @@
+{
+  "common": {
+    "aok": "AOK",
+    "loading": "加载中...",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "submit": "提交",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "close": "关闭",
+    "email": "邮箱",
+    "password": "密码",
+    "company": "公司"
+  },
+  "nav": {
+    "dashboard": "仪表板",
+    "campaigns": "营销活动",
+    "creatives": "创意素材",
+    "inventory": "广告位",
+    "analytics": "数据分析",
+    "administration": "管理",
+    "revenue": "AOK 收入",
+    "auditLogs": "审计日志",
+    "withdrawals": "提现",
+    "recharge": "充值",
+    "security2FA": "2FA 安全",
+    "logout": "退出登录"
+  },
+  "auth": {
+    "login": "登录",
+    "register": "创建账户",
+    "loginTitle": "登录您的 AOK 账户",
+    "registerTitle": "立即加入我们的 AOK 平台",
+    "advertiser": "广告主",
+    "publisher": "发布商",
+    "accountType": "账户类型",
+    "noAccount": "还没有账户？注册",
+    "hasAccount": "已有账户？登录",
+    "loginSuccess": "登录成功",
+    "logoutSuccess": "退出成功"
+  },
+  "landing": {
+    "hero": "新一代 RTB 平台",
+    "subtitle": "通过我们的实时竞价系统优化您的广告活动。",
+    "feature1Title": "实时竞价",
+    "feature1Desc": "超快竞价系统，最大化您的机会",
+    "feature2Title": "高级定向",
+    "feature2Desc": "精准触达您的受众，地理和人口统计定向",
+    "feature3Title": "详细分析",
+    "feature3Desc": "通过高级指标实时跟踪您的表现",
+    "feature4Title": "持续优化",
+    "feature4Desc": "智能算法自动提升您的投资回报率"
+  },
+  "dashboard": {
+    "welcome": "欢迎",
+    "advertiserOverview": "您的广告活动概览",
+    "publisherOverview": "您的广告位统计",
+    "activeCampaigns": "活跃营销活动",
+    "impressions": "展示量",
+    "clicks": "点击量",
+    "spending": "支出",
+    "balance": "余额",
+    "inventories": "广告位",
+    "revenue": "收入",
+    "avgCPM": "平均 CPM",
+    "quickActions": "快速操作"
+  },
+  "campaigns": {
+    "title": "营销活动",
+    "subtitle": "管理您的广告活动",
+    "newCampaign": "新建营销活动",
+    "noCampaigns": "暂无营销活动",
+    "createFirst": "创建您的第一个营销活动开始",
+    "name": "营销活动名称",
+    "totalBudget": "总预算",
+    "dailyBudget": "每日预算",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "activate": "激活",
+    "pause": "暂停",
+    "status": {
+      "draft": "草稿",
+      "active": "活跃",
+      "paused": "已暂停",
+      "completed": "已完成"
+    }
+  },
+  "payment": {
+    "title": "充值余额",
+    "subtitle": "选择套餐并即时充值您的账户",
+    "currentBalance": "当前余额",
+    "buyNow": "立即购买",
+    "securedByStripe": "Stripe 安全支付",
+    "allCards": "我们接受所有主要信用卡"
+  },
+  "language": {
+    "select": "选择语言",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ar": "العربية"
+  }
+}
